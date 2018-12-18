@@ -302,7 +302,8 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   }
 
   if room_id is not None:
-    room_link = maybe_use_https_host_url(request) + '/r/' + room_id
+#    room_link = maybe_use_https_host_url(request) + '/r/' + room_id
+    room_link = (constants.HOST_URL if constants.HOST_URL is not None else  request.host_url) + '/r/' + room_id
     room_link = append_url_arguments(request, room_link)
     params['room_id'] = room_id
     params['room_link'] = room_link
@@ -355,7 +356,7 @@ def get_memcache_key_for_room(host, room_id):
   return '%s/%s' % (host, room_id)
 
 def add_client_to_room(request, room_id, client_id, is_loopback):
-  key = get_memcache_key_for_room(request.host_url, room_id)
+  key = get_memcache_key_for_room((constants.HOST_URL if constants.HOST_URL is not None else  request.host_url), room_id)
   memcache_client = memcache.Client()
   error = None
   retries = 0
@@ -471,7 +472,7 @@ def save_message_from_client(host, room_id, client_id, message):
 class LeavePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
     result = remove_client_from_room(
-        self.request.host_url, room_id, client_id)
+        (constants.HOST_URL if constants.HOST_URL is not None else  self.request.host_url), room_id, client_id)
     if result['error'] is None:
       logging.info('Room ' + room_id + ' has state ' + result['room_state'])
 
@@ -499,7 +500,7 @@ class MessagePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
     message_json = self.request.body
     result = save_message_from_client(
-        self.request.host_url, room_id, client_id, message_json)
+        (constants.HOST_URL if constants.HOST_URL is not None else  self.request.host_url), room_id, client_id, message_json)
     if result['error'] is not None:
       self.write_response(result['error'])
       return

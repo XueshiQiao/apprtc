@@ -88,3 +88,5 @@ BIGQUERY_DATASET_LOCAL = 'dev'
 
 # BigQuery table within the dataset.
 BIGQUERY_TABLE = 'analytics'
+
+HOST_URL = 'https://apprtc.joey.blue'
