@@ -4,7 +4,7 @@ FROM golang:1.17.5-alpine3.15
 
 # Install and download deps.
 RUN apk add --no-cache git curl python2 build-base openssl-dev openssl 
-RUN git clone https://github.com/webrtc/apprtc.git
+RUN git clone https://github.com/XueshiQiao/apprtc.git
 
 # AppRTC GAE setup
 
@@ -21,7 +21,7 @@ RUN python apprtc/build/build_app_engine_package.py apprtc/src/ apprtc/out/ \
 
 # Wrap AppRTC GAE app in a bash script due to needing to run two apps within one container.
 RUN echo -e "#!/bin/sh\n" > /go/start.sh \
-    && echo -e "`pwd`/google-cloud-sdk/bin/dev_appserver.py --host 0.0.0.0 `pwd`/apprtc/out/app.yaml &\n" >> /go/start.sh
+    && echo -e "`pwd`/google-cloud-sdk/bin/dev_appserver.py --host 0.0.0.0 --enable_host_checking=false `pwd`/apprtc/out/app.yaml &\n" >> /go/start.sh
 
 # Collider setup
 # Go environment setup.
@@ -36,33 +36,9 @@ RUN ln -s `pwd`/apprtc/src/collider/collidermain $GOPATH/src \
     && go install collidermain
 
 # Add Collider executable to the start.sh bash script.
-RUN echo -e "$GOPATH/bin/collidermain -port=8089 -tls=true -room-server=http://localhost &\n" >> /go/start.sh
+RUN echo -e "$GOPATH/bin/collidermain -port=8089 -tls=false -room-server=https://apprtc.fans &\n" >> /go/start.sh
 
-ENV STUNNEL_VERSION 5.60
-
-WORKDIR /usr/src
-RUN curl  https://www.stunnel.org/archive/5.x/stunnel-${STUNNEL_VERSION}.tar.gz --output stunnel.tar.gz\
-    && tar -xf /usr/src/stunnel.tar.gz
-WORKDIR /usr/src/stunnel-${STUNNEL_VERSION}
-RUN ./configure --prefix=/usr && make && make install
-
-RUN mkdir /cert
-RUN openssl req -x509 -out /cert/cert.crt -keyout /cert/key.pem \
-  -newkey rsa:2048 -nodes -sha256 \
-  -subj '/CN=localhost' -extensions EXT -config <( \
-   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth") \
-  && cat /cert/key.pem > /cert/cert.pem \
-  && cat /cert/cert.crt >> /cert/cert.pem \
-  && chmod 600 /cert/cert.pem /cert/key.pem /cert/cert.crt
-
-RUN echo -e "foreground=yes\n" > /usr/etc/stunnel/stunnel.conf \
-    && echo -e "[AppRTC GAE]\n" >> /usr/etc/stunnel/stunnel.conf \ 
-    && echo -e "accept=0.0.0.0:443\n" >> /usr/etc/stunnel/stunnel.conf \
-    && echo -e "connect=0.0.0.0:8080\n" >> /usr/etc/stunnel/stunnel.conf \
-    && echo -e "cert=/cert/cert.pem\n" >> /usr/etc/stunnel/stunnel.conf 
-
-RUN echo -e  "/usr/bin/stunnel &\n" >> /go/start.sh \
-    && echo -e "wait -n\n" >> /go/start.sh \
+RUN echo -e "wait -n\n" >> /go/start.sh \
     && echo -e "exit $?\n" >> /go/start.sh \
     && chmod +x /go/start.sh
 
