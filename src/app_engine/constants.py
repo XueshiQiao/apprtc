@@ -11,7 +11,7 @@ REDIRECT_DOMAINS =  [
   'apprtc.appspot.com', 'apprtc.webrtc.org', 'www.appr.tc'
 ]
 # URL which we should redirect to if matching in REDIRECT_DOMAINS.
-REDIRECT_URL = 'https://apprtc.joey.blue'
+REDIRECT_URL = 'https://apprtc.fans'
 
 ROOM_MEMCACHE_EXPIRATION_SEC = 60 * 60 * 24
 MEMCACHE_RETRY_LIMIT = 100
@@ -43,7 +43,7 @@ WSS_INSTANCE_HOST_KEY = 'host_port_pair'
 WSS_INSTANCE_NAME_KEY = 'vm_name'
 WSS_INSTANCE_ZONE_KEY = 'zone'
 WSS_INSTANCES = [{
-    WSS_INSTANCE_HOST_KEY: 'ws.joey.blue:443',
+    WSS_INSTANCE_HOST_KEY: 'ws.apprtc.fans:443',
     WSS_INSTANCE_NAME_KEY: 'wsserver-std',
     WSS_INSTANCE_ZONE_KEY: 'us-central1-a'
 }]
