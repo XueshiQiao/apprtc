@@ -4,7 +4,6 @@ FROM golang:1.17.5-alpine3.15
 
 # Install and download deps.
 RUN apk add --no-cache git curl python2 build-base openssl-dev openssl 
-RUN git clone https://github.com/XueshiQiao/apprtc.git
 
 # AppRTC GAE setup
 
@@ -13,6 +12,10 @@ RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
     && tar -xf gcloud.tar.gz \
     && google-cloud-sdk/bin/gcloud components install app-engine-python-extras app-engine-python cloud-datastore-emulator --quiet \
     && rm -f gcloud.tar.gz
+
+# To prevent use git cache
+ADD https://api.github.com/repos/XueshiQiao/apprtc/git/refs/heads/master version.json
+RUN git clone https://github.com/XueshiQiao/apprtc.git
 
 # Mimick build step by manually copying everything into the appropriate folder and run build script.
 RUN python apprtc/build/build_app_engine_package.py apprtc/src/ apprtc/out/ \
