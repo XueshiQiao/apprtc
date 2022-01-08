@@ -112,10 +112,10 @@ def make_pc_constraints(dtls, dscp, ipv6):
   return constraints
 
 def maybe_use_https_host_url(request):
-    if request.get('wstls') == 'true' and request.scheme == 'http':
+    # if request.get('wstls') == 'true' and request.scheme == 'http':
     # Assume AppRTC is running behind a stunnel proxy and fix base URL.
-      return request.host_url.replace('http:', 'https:')
-    return request.host_url
+  return request.host_url.replace('http:', 'https:')
+    # return request.host_url
 
 def append_url_arguments(request, link):
   arguments = request.arguments()
